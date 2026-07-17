@@ -1,0 +1,3 @@
+tmux: ~/.config/tmux/tmux.conf
+nvim: ~/.config/nvim
+vimrc: ~/.vimrc
