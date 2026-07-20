@@ -1,3 +1,5 @@
 tmux: ~/.config/tmux/tmux.conf
 nvim: ~/.config/nvim
 vimrc: ~/.vimrc
+zshrc: ~/.zshrc
+kitty: ~/.config/kitty/kitty.conf

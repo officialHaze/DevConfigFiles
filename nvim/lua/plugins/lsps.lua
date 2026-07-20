@@ -192,7 +192,12 @@ return {
 			--     },
 			--   },
 			-- },
-			gopls = {},
+			gopls = {
+				-- Filter directories using - "-" to ignore; "+" to add
+				directoryFilters = { "-node_modules", "-bin", "-tmp", "-scripts", "-bashscripts" },
+				-- Encourages gopls to watch file changes outside the editor
+				watchFileChanges = true,
+			},
 			ruff = {},
 			jsonls = {},
 			sqlls = {},
@@ -205,7 +210,44 @@ return {
 			graphql = {},
 			html = { filetypes = { "html", "twig", "hbs" } },
 			cssls = {},
-			ts_ls = {},
+			ts_ls = {
+				-- This forces ts_ls to accurately locate a TypeScript installation package
+				-- anywhere on your system or inside your local project node_modules.
+				on_new_config = function(new_config, new_root_dir)
+					-- 1. Check if a local node_modules typescript exists first
+					local local_ts = new_root_dir .. "/node_modules/typescript/lib"
+					if vim.uv.fs_stat(local_ts) then
+						new_config.init_options = new_config.init_options or {}
+						new_config.init_options.tsserver = { path = local_ts }
+						return
+					end
+
+					-- 2. Fallback: Query where your global npm structure is hidden
+					local global_node = vim.fn.system("npm root -g"):gsub("\n", "")
+					local global_ts = global_node .. "/typescript/lib"
+					if vim.uv.fs_stat(global_ts) then
+						new_config.init_options = new_config.init_options or {}
+						new_config.init_options.tsserver = { path = global_ts }
+						return
+					end
+
+					-- 3. Safety Fallback: Use Mason's absolute local directory installation
+					local mason_ts = vim.fn.stdpath("data")
+						.. "/mason/packages/typescript-language-server/node_modules/typescript/lib"
+					if vim.uv.fs_stat(mason_ts) then
+						new_config.init_options = new_config.init_options or {}
+						new_config.init_options.tsserver = { path = mason_ts }
+					end
+				end,
+				settings = {
+					typescript = {
+						inlayHints = { includeInlayParameterNameHints = "all" },
+					},
+					javascript = {
+						inlayHints = { includeInlayParameterNameHints = "all" },
+					},
+				},
+			},
 			-- ltex = {},
 			-- texlab = {},
 		}
